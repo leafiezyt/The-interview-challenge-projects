@@ -1,0 +1,100 @@
+---
+title: "featureselect"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question trying to answer/hypothesis
+
+I continue to look into the microbiome dataset. It's know that Lacto bacillus is a friendly
+bacteria to our body. As we are having gestation related dataset, my hypothesis is that
+this healthy bacteria will be mostly likely be changing along the gestational stage within
+the vaginal samples.
+
+My plan is the following:
+1. Data with only lacto bacillus were extracted.
+2. Using a feature selection modeling to determine which sampling area for this particular
+bacteria can answer my question above.
+
+Please note that this report is only for summary note and codes include may not be able
+to run directly. I also included all the intermediate files generated in the process.
+
+```{r extract data, eval=FALSE, include = TRUE}
+write.table(micro[,1:8], file = "/Users/yetingzhang/Desktop/lacto.txt", quote = FALSE)
+```
+
+## Manipulate the extracted data a little bit using java
+
+I did this part using java. But it can be done in many other ways, e.g., R or python. I included the source code in a separate file as attachements (rename_seq.java). Basically, the first column was converted to gestational stage (1 to 4). 4 means postpartum to be precise. This column is also the class I am using in the next step.
+
+
+## Using python machine learning modules
+Lately, I have been looking into some tutorial of using python modules to do some type of ML work, e.g., classifier or feature selection. I used this tutorial online to produce this step.
+
+https://machinelearningmastery.com/feature-selection-machine-learning-python/
+
+This may not be the accurate or best model to use for this purpose, but this is a begining.
+
+```{python, eval=FALSE, include = TRUE}
+## results were also included in the attached final_model.html
+
+#!/usr/bin/env python
+# coding: utf-8
+
+
+# Feature Importance with Extra Trees Classifier
+from pandas import read_csv
+from sklearn.ensemble import ExtraTreesClassifier
+dataframe = read_csv("/Users/yetingzhang/Desktop/lacto_renamed", sep = "\t")
+array = dataframe.values
+X = array[:,0:8]
+Y = array[:,0]
+model = ExtraTreesClassifier()
+model.fit(X,Y)
+print(model.feature_importances_)
+
+```
+
+## The results:
+
+[0.65330866 0.07097721 0.05070127 0.03657613 
+0.0622006  0.05872933  0.03308913 0.03441767]
+ 
+So it's clear to me that the VaginalSwab/attribute/feature confirms to have the most importance. However, as these groups have two samplings, showing below, I feel that the evidence in the
+second sampling is not as strong as the first sampling. 
+
+I have not checked if these two swabs are done under exactly the same condition.
+
+### One note here, as I checked the data, some of the VaginalSwab is named as VaginalSwab_NA. We should exclude those data as they cannot give us useful/accurate information.
+
+## Moving onto the next step, using all VaginalSwab samples and classifying PTLG016 as "1" and all other samples as "0", also filter out the VaginalSwab_NA columns.
+
+The data preparation step was done using java. The code is included in the attachment.
+```{python, eval=FALSE, include = TRUE}
+## results were also included in the attached final_model.html
+
+#!/usr/bin/env python
+# coding: utf-8
+
+
+# Feature Importance with Extra Trees Classifier
+from pandas import read_csv
+from pandas import DataFrame
+import numpy as np
+from sklearn.ensemble import ExtraTreesClassifier
+dataframe = read_csv("/Users/yetingzhang/Desktop/Inputdata_microbiome_VaginalSwab", sep = "\t")
+array = dataframe.values
+X = array[:,0:3882]
+Y = array[:,0]
+model = ExtraTreesClassifier()
+model.fit(X,Y)
+print(model.feature_importances_)
+np.savetxt('/Users/yetingzhang/Desktop/test_all.csv',model.feature_importances_,delimiter='\t')
+
+```
+

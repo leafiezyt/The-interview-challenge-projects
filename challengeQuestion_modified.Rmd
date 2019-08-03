@@ -1,0 +1,125 @@
+---
+title: "Yeting_challengeProject"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Coding Challenge Project
+
+This challenge project is based on the following publication.
+
+Multiomics modeling of the immunome, transcriptome, microbiome, proteome and metabolome adaptations during human pregnancy” by Ghaemi et al, Bioinformatics 2018.
+
+Datasets was downloaded from https://nalab.stanford.edu/wp-content/uploads/pregnancymultiomics.zip.
+
+
+```{r GetFamiliarwithData, eval=TRUE, include=TRUE}
+load(file = "/Users/yetingzhang/Desktop/Paper-Code-01May2018/Data/Data.Rda")
+
+#Take a look at the data and print them into text files for easy interpretation (small memory footpring on my personal laptop)
+#write.table(featurepatients, file = "/Users/yetingzhang/Desktop/featurepatients.txt", quote = FALSE)
+#write.table(featuretimes, file = "/Users/yetingzhang/Desktop/featuretime.txt", quote = FALSE)
+#write.table(featureweeks, file = "/Users/yetingzhang/Desktop/featureweeks.txt", quote = FALSE)
+#Take a look at RNAseq data
+#write.table(InputData[[1]], file = "/Users/yetingzhang/Desktop/Inputdata_RNA.txt", quote = FALSE)
+# Take a look at microbiome data
+#write.table(InputData[[4]], file = "/Users/yetingzhang/Desktop/Inputdata_micbiome.txt", quote = FALSE)
+
+```
+
+## Questions to ask: Are there any outliers within the dataset?
+
+
+```{r do PCA on some datasets, include=TRUE}
+#look into microbiome data first, and see if there's any outliers identified, extract microbiome data
+#install.packages("ggfortify")
+library(ggfortify)
+#install.packages("factoextra")
+library(factoextra)
+micro <- InputData[[4]]
+
+# Look into postpartum data (serve as a control dataset)
+
+fourth <- micro[52:68,]
+# perform basic pca analysis
+pca_fourth <- prcomp(fourth)
+groups4th <- factor(row.names(fourth))
+
+fviz_eig(pca_fourth)
+# the scree plot shows that the top 2 pcas already explained the majority of the variances in the data
+
+# plot pc1 vs pc2 using postpartum patients microbiome dataset
+fviz_pca_ind(pca_fourth,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+# Based on the postpartum data, PTLG016 looks more like an outlier.
+
+# 1st trimester dataset (first 17 rows of the table)
+first <- micro[1:17,]
+# perform basic pca analysis using basic R package
+pca_first <- prcomp(first)
+groups <- factor(row.names(first))
+
+#autoplot(prcomp(first), label = TRUE, label.size = 3)
+
+fviz_eig(pca_first)
+# the scree plot shows that the top 2 pcas already explained the majority of the variances in the data
+fviz_pca_ind(pca_first,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+
+
+# Based on the figure, PTLG016 and PTLG020 seems like outliers. Look into 2nd trimester
+
+second <- micro[18:34,]
+# perform basic pca analysis
+pca_second <- prcomp(second)
+groups2nd <- factor(row.names(second))
+
+#autoplot(prcomp(second), label = TRUE, label.size = 3)
+fviz_eig(pca_second)
+# the scree plot shows that the top 2 pcas already explained the majority of the variances in the data
+# plot pc1 vs pc2 using second trimester patients microbiome dataset
+fviz_pca_ind(pca_second,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+
+#PTLG020 cluster again stand out as an outlier based on second trimester data
+
+#look into third trimester
+
+third <- micro[35:51,]
+# perform basic pca analysis
+pca_third <- prcomp(third)
+groups3rd <- factor(row.names(third))
+
+fviz_eig(pca_third)
+# the scree plot shows that the top 2 pcas already explained the majority of the variances in the data
+
+# plot pc1 vs pc2 using third trimester patients microbiome dataset
+
+fviz_pca_ind(pca_third,
+             col.ind = "cos2", # Color by the quality of representation
+             gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"),
+             repel = TRUE     # Avoid text overlapping
+             )
+
+#PTLG016 cluster again stand out as an outlier based on third trimester data
+
+
+```
+
+
+### Overall, PTLG016 is more like an outlier based on PCA results on 3 gestational stages/out of total 4 stages.
